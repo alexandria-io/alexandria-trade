@@ -1,0 +1,9 @@
+#!/bin/bash
+
+export RPC_USER=
+export RPC_PASSWORD=
+export RPC_PORT=
+export CURRENCY_A=
+
+process_block.py ${1}
+
