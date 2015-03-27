@@ -18,18 +18,17 @@ access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc
 
 transactions = access.listtransactions()
 
-con = None
-
 con = sqlite3.connect('alexandria_payment.db')
+cur = con.cursor()
     
 def add_tx_to_database(tx):
     with con:
-        cur = con.cursor()
         # First run a select to see if a receive exists
         cur.execute("SELECT txid FROM receive WHERE txid = ? LIMIT 1;" , (tx['txid'],))
         if not cur.fetchone():
             cur.execute("INSERT INTO receive (currencyA, addressA, amount, txid, processed) VALUES (?, ?, ?, ?, 0);"
                 , (currency_a, tx['address'], tx['amount'], tx['txid']))
+            cur.commit()
 
 for tx in transactions:
     if tx['category'] == 'receive' and tx['txid'] == txid:

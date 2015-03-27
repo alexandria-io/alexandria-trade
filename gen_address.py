@@ -16,8 +16,6 @@ currency_a = os.environ['CURRENCY_A']
 
 access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc_port))
 
-con = None
-
 con = sqlite3.connect('alexandria_payment.db')
     
 def add_address_to_database(address):

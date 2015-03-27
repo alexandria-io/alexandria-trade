@@ -17,16 +17,15 @@ access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc
 
 transactions = access.listtransactions()
 
-con = None
-
 con = sqlite3.connect('alexandria_payment.db')
+cur = con.cursor()
     
 def process_transaction(tx):
     # First run a select to see if a receive has been Processed. Exit if it has been Processed.
     with con:
-        cur = con.cursor()
         cur.execute("UPDATE receive SET confirmations = ?, blockhash = ? WHERE txid = ?;"
                 , (tx['confirmations'], tx['blockhash'], tx['txid']))
+        con.commit()
 
 for tx in transactions:
     if tx['category'] == 'receive' and  tx['confirmations'] >= 1:
