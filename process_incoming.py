@@ -28,7 +28,7 @@ def add_tx_to_database(tx):
         # First run a select to see if a receive exists
         cur.execute("SELECT txid FROM receive WHERE txid = ? LIMIT 1;" , (tx['txid'],))
         if not cur.fetchone():
-            cur.execute("INSERT INTO receive (currencyA, addressA, amount, txid) VALUES (?, ?, ?, ?);"
+            cur.execute("INSERT INTO receive (currencyA, addressA, amount, txid, processed) VALUES (?, ?, ?, ?, 0);"
                 , (currency_a, tx['address'], tx['amount'], tx['txid']))
 
 for tx in transactions:
