@@ -5,6 +5,7 @@ import sqlite3
 import sys
 from jsonrpc import ServiceProxy
 import json
+import os
 
 blockhash = sys.argv[1]
 

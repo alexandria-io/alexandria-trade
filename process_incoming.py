@@ -28,7 +28,7 @@ def add_tx_to_database(tx):
         if not cur.fetchone():
             cur.execute("INSERT INTO receive (currencyA, addressA, amount, txid, processed) VALUES (?, ?, ?, ?, 0);"
                 , (currency_a, tx['address'], tx['amount'], tx['txid']))
-            cur.commit()
+            con.commit()
 
 for tx in transactions:
     if tx['category'] == 'receive' and tx['txid'] == txid:
