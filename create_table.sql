@@ -19,7 +19,8 @@ CREATE TABLE receive (
 
 CREATE TABLE action (
     id INTEGER PRIMARY KEY ASC,
-    txid VARCHAR(128),
+    txidreceive VARCHAR(128),
+    txidsend VARCHAR(128),
     status VARCHAR(128),
     action VARCHAR(128));
 

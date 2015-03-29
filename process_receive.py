@@ -13,6 +13,13 @@ con = sqlite3.connect('alexandria_payment.db')
 con.row_factory = sqlite3.Row
 cur = con.cursor()
 
+rpc_user = os.environ['RPC_USER']
+rpc_password = os.environ['RPC_PASSWORD']
+rpc_port = os.environ['RPC_PORT']
+currency_b = os.environ['CURRENCY_B']
+
+access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc_port))
+
 def get_bittrex_values():
     url = 'https://bittrex.com/api/v1.1/public/getmarketsummary?market=btc-flo'
     try:
@@ -71,16 +78,36 @@ def process_receive(receive):
 
     cryptsyLastBTCLTC, cryptsyLastLTCFLO, cryptsyVolumeFLO  = get_cryptsy_values()
     print "cryptsy last BTC/LTC: %.8f, last: %.8f, volume: %.2f" % (cryptsyLastBTCLTC, cryptsyLastLTCFLO, cryptsyVolumeFLO)
+
     bittrexLastBTCFLO, bittrexVolumeFLO  = get_bittrex_values()
+
     print "bittrex last: %.8f, volume: %.2f" % (bittrexLastBTCFLO, bittrexVolumeFLO)
     poloniexLastBTCFLO, poloniexVolumeFLO  = get_poloniex_values()
     print "poloniex last: %.8f, volume: %.2f" % (poloniexLastBTCFLO, poloniexVolumeFLO)
 
+    totalVolumeFLO = cryptsyVolumeFLO + bittrexVolumeFLO + poloniexVolumeFLO
+
+    cryptsyWeight = cryptsyLastBTCLTC * cryptsyLastLTCFLO * cryptsyVolumeFLO / totalVolumeFLO
+    bittrexWeight =  bittrexLastBTCFLO * bittrexVolumeFLO / totalVolumeFLO
+    poloniexWeight = poloniexLastBTCFLO * poloniexVolumeFLO / totalVolumeFLO
+    weightedPrice = cryptsyWeight + bittrexWeight + poloniexWeight
+
+    print "weighted price: %.8f" % weightedPrice
+
+    # Gather receiving address
+    cur.execute("SELECT * FROM sendreceivemap WHERE addressA = ?", (receive['addressA'],))
+    result = cur.fetchone()
+    addressB = result["addressB"]
+
+    # Perform the send
+    currencyBAmount = receive['amount'] * weightedPrice
+    txidsend = access.sendtoaddress(addressB, currencyBAmount)
+
     # Log completion
     status = "SENT"
-    action = "SEND x AMOUNT TO y ADDRESS"
-    cur.execute("INSERT INTO action (txid, status, action) VALUES (?, ?, ?);"
-        , (receive['txid'], status, action))
+    action = "SENT %.8f FLO TO %s ADDRESS AT BTC RATE %.8f" % (currencyBAmount, addressB, weightedPrice)
+    cur.execute("INSERT INTO action (txidreceive, txidsend, status, action) VALUES (?, ?, ?, ?);"
+        , (receive['txidreceive'], txidsend, status, action))
     con.commit()
 
     # Update the record once it has been Processed
