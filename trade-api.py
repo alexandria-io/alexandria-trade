@@ -34,11 +34,15 @@ def close_connection(exception):
 def echo():
     return "Echo test!"
 
-@app.route('/btcdepositaddress')
-def btcdepositaddress():
+@app.route('/depositaddress')
+def depositaddress():
     """Return a BTC address for deposits to a FLO address"""
     # TODO: Input validation
     # TODO: Get a new BTC deposit address
+    if 'currency' in request.args:
+        currencyA = request.args['currency']
+    else:
+        currencyA = 'BTC'
     addressB = request.args['floaddress']
 
     # First check that an address exists
@@ -49,8 +53,8 @@ def btcdepositaddress():
     if not result:
         addressA = get_btc_address()
         #cur.execute("update sendreceivemap set addressB = ? where addressB = "" limit 1;", (addressB,))
-        cur.execute("INSERT INTO sendreceivemap (currencyA, addressA, currencyB, addressB) VALUES ('BTC', ?, 'FLO', ?);"
-                , (addressA, addressB))
+        cur.execute("INSERT INTO sendreceivemap (currencyA, addressA, currencyB, addressB) VALUES (?, ?, 'FLO', ?);"
+                , (currencyA, addressA, addressB))
         get_db().commit()
     else:
         addressA = result["addressA"]
