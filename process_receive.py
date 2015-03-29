@@ -5,6 +5,7 @@ import sqlite3
 import sys
 from jsonrpc import ServiceProxy
 import json
+import requests
 
 confirms = int(sys.argv[1])
 
@@ -12,11 +13,68 @@ con = sqlite3.connect('alexandria_payment.db')
 con.row_factory = sqlite3.Row
 cur = con.cursor()
 
+def get_bittrex_values():
+    url = 'https://bittrex.com/api/v1.1/public/getmarketsummary?market=btc-flo'
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        print "Unable to connect to Bittrex API ;_;"
+    m = r.json()['result'][0]
+    
+    bittrexLastBTCFLO = m['Last']
+    bittrexVolumeFLO = m['Volume']
+    return bittrexLastBTCFLO, bittrexVolumeFLO
+
+def get_poloniex_values():
+    url = 'https://poloniex.com/public?command=returnTradeHistory&currencyPair=BTC_FLO'
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        print "Unable to connect to Poloniex API ;_;"
+    m = r.json()
+    poloniexLastBTCFLO = m[0]['rate']
+
+    url = 'https://poloniex.com/public?command=return24hVolume'
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        print "Unable to connect to Poloniex API ;_;"
+    m = r.json()
+    poloniexVolumeFLO = m['BTC_FLO']['FLO']
+
+    return float(poloniexLastBTCFLO), float(poloniexVolumeFLO)
+
+
+def get_cryptsy_values():
+    url = 'http://pubapi.cryptsy.com/api.php?method=singlemarketdata&marketid=3'
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        print "Unable to connect to Cryptsy API ;_;"
+    m = r.json()['return']['markets']['LTC']
+    cryptsyLastBTCLTC = m['lasttradeprice']
+
+    url = 'http://pubapi.cryptsy.com/api.php?method=singlemarketdata&marketid=61'
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        print "Unable to connect to Cryptsy API ;_;"
+    m = r.json()['return']['markets']['FLO']
+    cryptsyLastLTCFLO = m['lasttradeprice']
+    cryptsyVolumeFLO = m['volume']
+
+    return float(cryptsyLastBTCLTC), float(cryptsyLastLTCFLO), float(cryptsyVolumeFLO)
+
 def process_receive(receive):
     # The core of how we process receiving of a payment
     # Process the receive and then update Processed
 
-    # Magic goes here
+    cryptsyLastBTCLTC, cryptsyLastLTCFLO, cryptsyVolumeFLO  = get_cryptsy_values()
+    print "cryptsy last BTC/LTC: %.8f, last: %.8f, volume: %.2f" % (cryptsyLastBTCLTC, cryptsyLastLTCFLO, cryptsyVolumeFLO)
+    bittrexLastBTCFLO, bittrexVolumeFLO  = get_bittrex_values()
+    print "bittrex last: %.8f, volume: %.2f" % (bittrexLastBTCFLO, bittrexVolumeFLO)
+    poloniexLastBTCFLO, poloniexVolumeFLO  = get_poloniex_values()
+    print "poloniex last: %.8f, volume: %.2f" % (poloniexLastBTCFLO, poloniexVolumeFLO)
 
     # Log completion
     status = "SENT"
