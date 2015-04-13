@@ -6,6 +6,7 @@ import sys
 from jsonrpc import ServiceProxy
 import json
 import requests
+import os
 
 confirms = int(sys.argv[1])
 
