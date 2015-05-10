@@ -1,3 +1,8 @@
+# Requirements
+
+flask
+jsonrpc (from: http://json-rpc.org/wiki/python-json-rpc)
+
 # alexandria-trade
 
 Running the API

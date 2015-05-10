@@ -101,14 +101,14 @@ def process_receive(receive):
     addressB = result["addressB"]
 
     # Perform the send
-    currencyBAmount = receive['amount'] * weightedPrice
+    currencyBAmount = receive['amount'] / weightedPrice
     txidsend = access.sendtoaddress(addressB, currencyBAmount)
 
     # Log completion
     status = "SENT"
     action = "SENT %.8f FLO TO %s ADDRESS AT BTC RATE %.8f" % (currencyBAmount, addressB, weightedPrice)
     cur.execute("INSERT INTO action (txidreceive, txidsend, status, action) VALUES (?, ?, ?, ?);"
-        , (receive['txidreceive'], txidsend, status, action))
+        , (receive['txid'], txidsend, status, action))
     con.commit()
 
     # Update the record once it has been Processed
