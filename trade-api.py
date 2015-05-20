@@ -24,6 +24,11 @@ def get_btc_address():
     address = access.getnewaddress()
     return address
 
+def get_flo_balance():
+    access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (app.config['CURRENCY_B_RPC_USER'], app.config['CURRENCY_B_RPC_PASSWORD'], app.config['CURRENCY_B_RPC_PORT']))
+    balance = access.getbalance()
+    return balance
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
@@ -59,6 +64,11 @@ def depositaddress():
     else:
         addressA = result["addressA"]
     return addressA
+
+@app.route('/flobalance')
+def flobalance():
+    """Return FLO balance"""
+    return str(get_flo_balance())
 
 if __name__ == "__main__":
 
