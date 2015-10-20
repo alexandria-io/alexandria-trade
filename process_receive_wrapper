@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export RPC_USER=florincoinrpc
+export RPC_PASSWORD=PASSWORD_GOES_HERE
+export RPC_PORT=18322
+export CURRENCY_B=FLO
+
+# Set number of confirmations required as the argument
+process_receive.py 1
+
