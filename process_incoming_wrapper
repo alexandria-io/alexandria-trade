@@ -1,9 +1,10 @@
 #!/bin/bash
 
-export RPC_USER=
-export RPC_PASSWORD=
-export RPC_PORT=
-export CURRENCY_A=
+# BTC
+export RPC_USER=bitcoinrpc
+export RPC_PASSWORD=PASSWORD_GOES_HERE
+export RPC_PORT=8332
+export CURRENCY_A=BTC
 
 process_incoming.py ${1}
 
